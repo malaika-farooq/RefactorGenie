@@ -1,19 +1,29 @@
-# 💬 Chatbot template
+RefactorGenie is your AI-powered assistant designed to make code refactoring easier, faster, and more efficient. Whether you're a developer looking to clean up your codebase, enhance code readability, or optimize performance, RefactorGenie is here to help. Leveraging advanced AI models, RefactorGenie analyzes your code and provides multiple refactored solutions tailored to your needs. Say goodbye to manual code reviews and hello to intelligent, automated refactoring.
 
-A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
+Steps to Use RefactorGenie
+Access the Application:
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chatbot-template.streamlit.app/)
+Open the RefactorGenie application on your web browser.
+Upload Your Code:
 
-### How to run it on your own machine
+Click the "Upload" button to upload your Python code file.
+Select the .py file from your device and click "Open".
+View Uploaded Code:
 
-1. Install the requirements
+Once uploaded, your code will be displayed on the screen for you to review.
+Enter Additional Code (Optional):
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+If you want to enter additional code or make modifications, type your code in the provided text input box labeled "Enter your code."
+Submit for Refactoring:
 
-2. Run the app
+Click the "SEND" button to submit your code for refactoring.
+The AI will process your code and generate optimized solutions.
+Receive Refactored Solutions:
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+View the refactored solutions provided by RefactorGenie.
+The solutions will be displayed on the screen, allowing you to compare and choose the best one for your needs.
+Implement and Enjoy:
+
+Implement the refactored code into your project.
+Enjoy cleaner, more efficient, and optimized code!
+By following these simple steps, you can leverage the power of AI to enhance your coding practices, ensuring your projects are maintainable and performant.
