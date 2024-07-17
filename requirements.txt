@@ -1,2 +1,8 @@
 streamlit
-openai
+mistralai
+pinecone-client
+cohere
+transformers
+pygwalker
+pandas
+python-dotenv
