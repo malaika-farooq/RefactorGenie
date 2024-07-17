@@ -196,12 +196,7 @@ st.sidebar.write("🔗 [GitHub](https://www.github.com)")
 st.markdown("Hi, this is your RefactorGenie, let's refactor your code!")
 st.markdown("### Visit RefactorGenie")
 if st.button("REFACTOR"):
-    js = """
-    <script type="text/javascript">
-        window.open("https://refactor-genie.vercel.app/", "_blank").focus();
-    </script>
-    """
-    st.markdown(js, unsafe_allow_html=True)
+    st.markdown('<a href="https://refactor-genie.vercel.app/" target="_blank">Open RefactorGenie</a>', unsafe_allow_html=True)
    
 # Instructions for users
 st.markdown(
