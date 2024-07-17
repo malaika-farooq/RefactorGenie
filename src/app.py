@@ -25,9 +25,9 @@ def get_response(question, language):
         {
             "role": "system",
             "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
-            Structure your answer in the JSON format: {output}
+ Structure your answer in the JSON format: {output}
 
-        Here's the question: """,
+Here's the question: """,
         },
         {"role": "user", "content": question},
     ]
@@ -44,7 +44,10 @@ def get_response(question, language):
         },
     )
     res = res.json()
-    response = res
+    response = res["choices"][0]["message"]["content"]
+    response = response.replace("```python", "```" + language)
+    response = response.replace("```", "")
+    print(response)
     response = json.loads(response)
     return response
 
