@@ -45,9 +45,6 @@ Here's the question: """,
     )
     res = res.json()
     response = res
-    response = response.replace("```python", "```" + language)
-    response = response.replace("```", "")
-    print(response)
     response = json.loads(response)
     return response
 
