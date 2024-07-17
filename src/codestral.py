@@ -1,46 +1,51 @@
+import json
 import os
+
 import requests
 from dotenv import load_dotenv
+load_dotenv()
 
-def get_code_completion(prompt):
-    # Load environment variables from the .env file
-    load_dotenv()
+api_key = os.getenv("MISTRAL_API_KEY")
 
-    api_key = os.getenv("MISTRAL_API_KEY")
-
-    # Check if the API key was loaded correctly
-    if api_key is None:
-        raise ValueError("MISTRAL_API_KEY not found in the environment variables.")
-
-    # Define the endpoint URL
-    endpoint_url = "https://codestral.mistral.ai/v1/fim/completions"
-
-    # Extract keywords from the user's prompt (simple approach: split by spaces)
-    keywords = prompt.split()
-
-    # Create the suffix from the keywords
-    suffix = " ".join(keywords)
-
-    # Create the request payload
-    payload = {
-        "model": "codestral-latest",  # or the appropriate model identifier
-        "prompt": prompt,
-        "suffix": suffix,
+def get_response(question):
+    """
+    Get the response from the Codestral API
+    """
+    output = {
+        "prefix": "A description of the code solution",
+        "programming_language": "The programming language",
+        "imports": "The imports",
+        "code": "The functioning code block. Write the whole code in single line and use \t and \n for tab and new line",
+        "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}"
     }
 
-    # Set the headers for the request
+    model = "codestral-latest"
+    messages = [{
+                "role": "system",
+                "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. \n
+                Structure your answer in the JSON format: {output}
+
+                Here's the question: """
+            }, {"role": "user", "content": question}]
+
+
     headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
     }
 
-    try:
-        # Make the POST request to the specified endpoint
-        response = requests.post(endpoint_url, json=payload, headers=headers)
-        response.raise_for_status()  # Raise an error for bad responses
-        data = response.json()
-
-        # Return the response content
-        return data['choices'][0]['message']['content']
-    except requests.exceptions.RequestException as e:
-        return f"API request failed: {e}"
+    res = requests.post(
+        "https://codestral.mistral.ai/v1/chat/completions",
+        headers=headers,
+        json ={
+            "model": model,
+            "messages": messages,
+            "response_format": {"type": "json_object"}
+        }
+    )
+    res = res.json()
+    response = res["choices"][0]["message"]["content"]
+    response = response.replace("```python", "")
+    response = response.replace("```", "")
+    print(response)
+    response = json.loads(response)
+    return response
