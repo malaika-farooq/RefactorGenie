@@ -1,10 +1,10 @@
 streamlit
 mistralai
-llama-index
-llama-index-llms-mistralai
-llama-index-embeddings-mistralai
 cohere
 transformers
 pygwalker
 pandas
 python-dotenv
+streamlit-antd-components
+streamlit-navigation-bar
+streamlit-ace
