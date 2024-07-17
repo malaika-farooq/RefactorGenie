@@ -1,4 +1,7 @@
 streamlit
+streamlit-antd-components
+streamlit-navigation-bar
+streamlit-ace
 mistralai
 llama-index
 llama-index-llms-mistralai
