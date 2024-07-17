@@ -4,63 +4,63 @@ import os
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
-api_key = os.getenv("MISTRAL_API_KEY")
+# load_dotenv()
+# api_key = os.getenv("MISTRAL_API_KEY")
 
 
-def get_response(question):
-    """
-    Get the response from the Codestral API
-    """
-    output = {
-        "prefix": "A description of the code solution",
-        "programming_language": "The programming language",
-        "imports": "The imports",
-        "code": "The functioning code block. Write the whole code in a single line and use \t and \n for tab and new line",
-        "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}",
-    }
+# def get_response(question):
+#     """
+#     Get the response from the Codestral API
+#     """
+#     output = {
+#         "prefix": "A description of the code solution",
+#         "programming_language": "The programming language",
+#         "imports": "The imports",
+#         "code": "The functioning code block. Write the whole code in a single line and use \t and \n for tab and new line",
+#         "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}",
+#     }
 
-    model = "codestral-latest"
-    messages = [
-        {
-            "role": "system",
-            "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
- Structure your answer in the JSON format: {output}
+#     model = "codestral-latest"
+#     messages = [
+#         {
+#             "role": "system",
+#             "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
+#  Structure your answer in the JSON format: {output}
 
-Here's the question: """,
-        },
-        {"role": "user", "content": question},
-    ]
+# Here's the question: """,
+#         },
+#         {"role": "user", "content": question},
+#     ]
 
-    headers = {"Authorization": f"Bearer {api_key}"}
+#     headers = {"Authorization": f"Bearer {api_key}"}
 
-    try:
-        res = requests.post(
-            "https://codestral.mistral.ai/v1/chat/completions",
-            headers=headers,
-            json={
-                "model": model,
-                "messages": messages,
-                "response_format": {"type": "json_object"},
-            },
-        )
-        res.raise_for_status()  # Raise an exception for HTTP errors
-    except requests.exceptions.RequestException as e:
-        st.error(f"API request failed: {e}")
-        return None
+#     try:
+#         res = requests.post(
+#             "https://codestral.mistral.ai/v1/chat/completions",
+#             headers=headers,
+#             json={
+#                 "model": model,
+#                 "messages": messages,
+#                 "response_format": {"type": "json_object"},
+#             },
+#         )
+#         res.raise_for_status()  # Raise an exception for HTTP errors
+#     except requests.exceptions.RequestException as e:
+#         st.error(f"API request failed: {e}")
+#         return None
 
-    try:
-        res_json = res.json()
-        response = res_json["choices"][0]["message"]["content"]
-        response = response.replace("```python", "```")
-        response = response.replace("```", "")
-        response = json.loads(response)
-    except (json.JSONDecodeError, KeyError, TypeError) as e:
-        st.error(f"Failed to parse API response: {e}")
-        st.error(f"API response content: {res.content}")
-        return None
+#     try:
+#         res_json = res.json()
+#         response = res_json["choices"][0]["message"]["content"]
+#         response = response.replace("```python", "```")
+#         response = response.replace("```", "")
+#         response = json.loads(response)
+#     except (json.JSONDecodeError, KeyError, TypeError) as e:
+#         st.error(f"Failed to parse API response: {e}")
+#         st.error(f"API response content: {res.content}")
+#         return None
 
-    return response
+#     return response
 
 
 st.set_page_config(page_title="RefactorGenie", page_icon="🧞", layout="wide")
@@ -194,42 +194,15 @@ st.sidebar.write("🔗 [GitHub](https://www.github.com)")
 
 # Conversation container
 st.markdown("Hi, this is your RefactorGenie, let's refactor your code!")
-
-# Upload code file
-file_types = ["py", "ts", "js"]
-uploaded_file = st.file_uploader(
-    "Upload your Python, TypeScript, or JavaScript code file", type=file_types
-)
-
-if uploaded_file:
-    code = uploaded_file.read().decode("utf-8")
-    st.markdown(
-        f'<div class="uploaded-file"><pre><code>{code}</code></pre></div>',
-        unsafe_allow_html=True,
-    )
-
-    # User input
-    user_input = st.text_input("Enter additional code (optional).")
-
-    # Button to send user input
-    if st.button("REFACTOR"):
-        if user_input:
-            st.markdown("**Additional Code**")
-            st.code(user_input)
-            total_code = code + "\n" + user_input
-        else:
-            total_code = code
-
-        # Get response from Codestral API
-        response = get_response(total_code)
-
-        if response:
-            # Process the response and provide refactored solutions
-            st.markdown("Here is your refactored code:")
-            st.write(response)
-        else:
-            st.error("Failed to get a valid response from the API.")
-
+st.markdown("### Visit RefactorGenie")
+if st.button("REFACTOR"):
+    js = """
+    <script type="text/javascript">
+        window.open("https://refactor-genie.vercel.app/", "_blank").focus();
+    </script>
+    """
+    st.markdown(js, unsafe_allow_html=True)
+   
 # Instructions for users
 st.markdown(
     "Upload your code file or enter additional code and click REFACTOR to get refactored solutions."

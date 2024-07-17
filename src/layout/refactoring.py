@@ -44,10 +44,16 @@ def get_response(question, language):
             "response_format": {"type": "json_object"},
         },
     )
-    res = res.json()
-    response = res
-    st.title(response)
-    response = json.loads(response)
+    try:
+        res_json = res.json()
+        response = res_json["choices"][0]["message"]["content"]
+        response = response.replace("```python", "```")
+        response = response.replace("```", "")
+        response = json.loads(response)
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        st.error(f"Failed to parse API response: {e}")
+        st.error(f"API response content: {res.content}")
+        return None
     return response
 
 # Custom CSS styles
