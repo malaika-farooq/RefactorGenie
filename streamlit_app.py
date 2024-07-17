@@ -44,7 +44,7 @@ Here's the question: """,
         },
     )
     res = res.json()
-    response = res["choices"][0]["message"]["content"]
+    response = res
     response = response.replace("```python", "```" + language)
     response = response.replace("```", "")
     print(response)
