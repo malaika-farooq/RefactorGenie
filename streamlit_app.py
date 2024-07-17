@@ -3,73 +3,64 @@ import json
 import os
 import requests
 from dotenv import load_dotenv
+import streamlit.components.v1 as components
 
-# load_dotenv()
-# api_key = os.getenv("MISTRAL_API_KEY")
+load_dotenv()
+api_key = os.getenv("MISTRAL_API_KEY")
 
+def get_response(question):
+    """
+    Get the response from the Codestral API
+    """
+    output = {
+        "prefix": "A description of the code solution",
+        "programming_language": "The programming language",
+        "imports": "The imports",
+        "code": "The functioning code block. Write the whole code in a single line and use \t and \n for tab and new line",
+        "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}",
+    }
 
-# def get_response(question):
-#     """
-#     Get the response from the Codestral API
-#     """
-#     output = {
-#         "prefix": "A description of the code solution",
-#         "programming_language": "The programming language",
-#         "imports": "The imports",
-#         "code": "The functioning code block. Write the whole code in a single line and use \t and \n for tab and new line",
-#         "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}",
-#     }
+    model = "codestral-latest"
+    messages = [
+        {
+            "role": "system",
+            "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. \n
+                Structure your answer in the JSON format: {output}
 
-#     model = "codestral-latest"
-#     messages = [
-#         {
-#             "role": "system",
-#             "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
-#  Structure your answer in the JSON format: {output}
+                Here's the question: """,
+        },
+        {"role": "user", "content": question},
+    ]
+    headers = {"Authorization": f"Bearer {api_key}"}
 
-# Here's the question: """,
-#         },
-#         {"role": "user", "content": question},
-#     ]
+    try:
+        res = requests.post(
+            "https://codestral.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json={
+                "model": model,
+                "messages": messages,
+                "response_format": {"type": "json_object"},
+            },
+        )
+        res.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        st.error(f"API request failed: {e}")
+        return None
 
-#     headers = {"Authorization": f"Bearer {api_key}"}
+    try:
+        res_json = res.json()
+        response = res_json["choices"][0]["message"]["content"]
+        response = json.loads(response)
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        st.error(f"Failed to parse API response: {e}")
+        st.error(f"API response content: {res.content}")
+        return None
 
-#     try:
-#         res = requests.post(
-#             "https://codestral.mistral.ai/v1/chat/completions",
-#             headers=headers,
-#             json={
-#                 "model": model,
-#                 "messages": messages,
-#                 "response_format": {"type": "json_object"},
-#             },
-#         )
-#         res.raise_for_status()  # Raise an exception for HTTP errors
-#     except requests.exceptions.RequestException as e:
-#         st.error(f"API request failed: {e}")
-#         return None
-
-#     try:
-#         res_json = res.json()
-#         response = res_json["choices"][0]["message"]["content"]
-#         response = response.replace("```python", "```")
-#         response = response.replace("```", "")
-#         response = json.loads(response)
-#     except (json.JSONDecodeError, KeyError, TypeError) as e:
-#         st.error(f"Failed to parse API response: {e}")
-#         st.error(f"API response content: {res.content}")
-#         return None
-
-#     return response
+    return response
 
 
 st.set_page_config(page_title="RefactorGenie", page_icon="🧞", layout="wide")
-
-# Show title and description.
-st.title("RefactorGenie 💬🧞")
-st.write(
-    "This is a simple chatbot that uses Mistral AI and Cohere model to generate responses."
-)
 
 # Custom CSS styles
 st.markdown(
@@ -151,6 +142,10 @@ code {
 
 # Sidebar
 st.sidebar.title("💬🧞")
+
+# Navigation
+page = st.sidebar.selectbox("Select a page", ["Home", "Refactor Code", "In-built editor"])
+
 st.sidebar.markdown("### About:")
 st.sidebar.markdown(
     """
@@ -164,21 +159,21 @@ st.sidebar.markdown("### Steps to Use RefactorGenie:")
 st.sidebar.markdown(
     """
 1. **Access the Application**:
-   - Click on RefactorGenie and Open the RefactorGenie link on your web browser.
+   - Open the RefactorGenie application on your web browser.
 
 2. **Upload Your Code**:
-   - Enter you git URL and Click the "Get file tree" button to access your Python, TypeScript, or JavaScript code files.
-   - Select the `.py`, `.ts`, or `.js` files to proceed.".
+   - Click the "Upload" button to upload your Python, TypeScript, or JavaScript code file.
+   - Select the `.py`, `.ts`, or `.js` file from your device and click "Open".
 
-3. **View Selected Code**:
-   - Once selected, your code will be displayed on the screen for you to review.
+3. **View Uploaded Code**:
+   - Once uploaded, your code will be displayed on the screen for you to review.
 
 4. **Submit for Refactoring**:
-   - Add API Key and Click the "Refactor" button to submit your code for refactoring.
+   - Click the "SEND" button to submit your code for refactoring.
    - The AI will process your code and generate optimized solutions.
 
 5. **Receive Refactored Solutions**:
-   - View the refactored solutions provided by RefactorGenie in response.
+   - View the refactored solutions provided by RefactorGenie.
    - The solutions will be displayed on the screen, allowing you to compare and choose the best one for your needs.
 
 6. **Implement and Enjoy**:
@@ -189,19 +184,70 @@ st.sidebar.markdown(
 st.sidebar.markdown("### Social Links:")
 st.sidebar.write("🔗 [GitHub](https://www.github.com)")
 
-# Main page
-# st.markdown('<header><h1>Welcome to RefactorGenie</h1></header>', unsafe_allow_html=True)
 
-# Conversation container
-st.markdown("Hi, this is your RefactorGenie, let's refactor your code!")
-st.markdown("### Visit RefactorGenie")
-if st.button("REFACTOR"):
-    st.markdown('<a href="https://refactor-genie.vercel.app/" target="_blank">Open RefactorGenie</a>', unsafe_allow_html=True)
-   
-# Instructions for users
-st.markdown(
-    "Upload your code file or enter additional code and click REFACTOR to get refactored solutions."
-)
+if page == "Home":
+    st.title("Welcome to RefactorGenie 💬🧞")
+    st.write(
+        "This is a simple chatbot that uses Mistral AI and Cohere model to generate responses."
+    )
+    st.markdown("Hi, this is your RefactorGenie, let's refactor your code!")
+    st.markdown(
+        "Upload your code file or enter additional code and click REFACTOR to get refactored solutions."
+    )
+
+elif page == "Refactor Code":
+    st.title("Refactor Your Code")
+    
+    # Upload code file
+    file_types = ["py", "ts", "js"]
+    uploaded_file = st.file_uploader(
+        "Upload your Python, TypeScript, or JavaScript code file", type=file_types
+    )
+
+    if uploaded_file:
+        code = uploaded_file.read().decode("utf-8")
+        st.markdown(
+            f'<div class="uploaded-file"><pre><code>{code}</code></pre></div>',
+            unsafe_allow_html=True,
+        )
+
+        # User input
+        user_input = st.text_input("Enter additional code (optional).")
+
+        # Button to send user input
+        if st.button("REFACTOR"):
+            if user_input:
+                st.markdown("**Additional Code**")
+                st.code(user_input)
+                total_code = code + "\n" + user_input
+            else:
+                total_code = code
+
+            # Get response from Codestral API
+            response = get_response(total_code)
+
+            if response:
+                # Process the response and provide refactored solutions
+                st.markdown("Here is your refactored code:")
+                st.write(response)
+            else:
+                st.error("Failed to get a valid response from the API.")
+
+elif page == "In-built editor":
+    st.title("Editor")
+    
+    # Path to the HTML file
+    html_file_path = "index.html"
+    
+    # Read the HTML file
+    try:
+        with open(html_file_path, 'r', encoding='utf-8') as html_file:
+            html_content = html_file.read()
+        
+        # Display the HTML content
+        components.html(html_content, height=600, scrolling=True)
+    except FileNotFoundError:
+        st.error(f"HTML file not found at {html_file_path}")
 
 # Footer with social links
 st.markdown(
