@@ -1,4 +1,56 @@
 import streamlit as st
+import json
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("MISTRAL_API_KEY")
+
+
+def get_response(question, language):
+    """
+    Get the response from the Codestral API
+    """
+    output = {
+        "prefix": "A description of the code solution",
+        "programming_language": language,
+        "imports": "The imports",
+        "code": "The functioning code block. Write the whole code in a single line and use \t and \n for tab and new line",
+        "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}",
+    }
+
+    model = "codestral-latest"
+    messages = [
+        {
+            "role": "system",
+            "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
+ Structure your answer in the JSON format: {output}
+
+Here's the question: """,
+        },
+        {"role": "user", "content": question},
+    ]
+
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    res = requests.post(
+        "https://codestral.mistral.ai/v1/chat/completions",
+        headers=headers,
+        json={
+            "model": model,
+            "messages": messages,
+            "response_format": {"type": "json_object"},
+        },
+    )
+    res = res.json()
+    response = res["choices"][0]["message"]["content"]
+    response = response.replace("```python", "```" + language)
+    response = response.replace("```", "")
+    print(response)
+    response = json.loads(response)
+    return response
+
 
 st.set_page_config(page_title="RefactorGenie", page_icon="🧞", layout="wide")
 
@@ -6,10 +58,11 @@ st.set_page_config(page_title="RefactorGenie", page_icon="🧞", layout="wide")
 st.title("RefactorGenie 💬🧞")
 st.write(
     "This is a simple chatbot that uses Mistral AI and Cohere model to generate responses."
-   )
+)
 
 # Custom CSS styles
-st.markdown("""
+st.markdown(
+    """
 <style>
 /* Sidebar styles */
 .sidebar .sidebar-content {
@@ -81,44 +134,47 @@ code {
     text-decoration: underline;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Sidebar
 st.sidebar.title("💬🧞")
 st.sidebar.markdown("### About:")
-st.sidebar.markdown("""
+st.sidebar.markdown(
+    """
 **RefactorGenie** is your AI-powered assistant designed to make code refactoring easier, faster, and more efficient. 
 Whether you're a developer looking to clean up your codebase, enhance code readability, or optimize performance, RefactorGenie is here to help. 
 Leveraging advanced AI models, RefactorGenie analyzes your code and provides multiple refactored solutions tailored to your needs. 
 Say goodbye to manual code reviews and hello to intelligent, automated refactoring.
-""")
+"""
+)
 st.sidebar.markdown("### Steps to Use RefactorGenie:")
-st.sidebar.markdown("""
+st.sidebar.markdown(
+    """
 1. **Access the Application**:
    - Open the RefactorGenie application on your web browser.
 
 2. **Upload Your Code**:
-   - Click the "Upload" button to upload your Python code file.
-   - Select the `.py` file from your device and click "Open".
+   - Click the "Upload" button to upload your Python, TypeScript, or JavaScript code file.
+   - Select the `.py`, `.ts`, or `.js` file from your device and click "Open".
 
 3. **View Uploaded Code**:
    - Once uploaded, your code will be displayed on the screen for you to review.
 
-4. **Enter Additional Code (Optional)**:
-   - If you want to enter additional code or make modifications, type your code in the provided text input box labeled "Enter your code."
-
-5. **Submit for Refactoring**:
+4. **Submit for Refactoring**:
    - Click the "SEND" button to submit your code for refactoring.
    - The AI will process your code and generate optimized solutions.
 
-6. **Receive Refactored Solutions**:
+5. **Receive Refactored Solutions**:
    - View the refactored solutions provided by RefactorGenie.
    - The solutions will be displayed on the screen, allowing you to compare and choose the best one for your needs.
 
-7. **Implement and Enjoy**:
+6. **Implement and Enjoy**:
    - Implement the refactored code into your project.
    - Enjoy cleaner, more efficient, and optimized code!
-""")
+"""
+)
 st.sidebar.markdown("### Social Links:")
 st.sidebar.write("🔗 [GitHub](https://www.github.com)")
 
@@ -129,36 +185,51 @@ st.sidebar.write("🔗 [GitHub](https://www.github.com)")
 st.markdown("Hi, this is your RefactorGenie, let's refactor your code!")
 
 # Upload code file
-uploaded_file = st.file_uploader("Upload your Python code file", type="py")
+file_types = ["py", "ts", "js"]
+uploaded_file = st.file_uploader(
+    "Upload your Python, TypeScript, or JavaScript code file", type=file_types
+)
+
 if uploaded_file:
+    file_extension = uploaded_file.name.split(".")[-1]
     code = uploaded_file.read().decode("utf-8")
-    st.markdown(f'<div class="uploaded-file"><pre><code>{code}</code></pre></div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="uploaded-file"><pre><code>{code}</code></pre></div>',
+        unsafe_allow_html=True,
+    )
 
-# User input
-user_input = st.text_input("Enter your code.")
+    # User input
+    user_input = st.text_input("Enter additional code (optional).")
 
-# Button to send user input
-if st.button("SEND"):
-    if user_input:
-        st.markdown("**User Input**")
-        st.code(user_input, language="python")
-        # Here you would typically process the code and provide refactored solutions
-        # For demonstration purposes, we'll just display some example solutions
+    # Button to send user input
+    if st.button("REFACTOR"):
+        if user_input:
+            st.markdown("**Additional Code**")
+            st.code(user_input, language=file_extension)
+            total_code = code + "\n" + user_input
+        else:
+            total_code = code
+
+        # Get response from Codestral API
+        response = get_response(total_code, file_extension)
+
+        # Process the response and provide refactored solutions
+        # For demonstration purposes, we'll just display the response
         st.markdown("Here is your refactored code:")
-        st.markdown("**Solution 1**")
-        st.code("def example_solution_1():\n    pass", language="python")
-        st.markdown("**Solution 2**")
-        st.code("def example_solution_2():\n    pass", language="python")
-    else:
-        st.error("Please enter your code.")
+        st.write(response)
 
 # Instructions for users
-st.markdown("Upload your code file or enter your code in the text box and click SEND to get refactored solutions.")
+st.markdown(
+    "Upload your code file or enter additional code and click REFACTOR to get refactored solutions."
+)
 
 # Footer with social links
-st.markdown("""
+st.markdown(
+    """
 <div class="footer">
-    <p>Follow us on:</p>
-    <a href="https://www.github.com" target="_blank">GitHub</a>
+<p>Follow us on:</p>
+<a href="https://www.github.com" target="_blank">GitHub</a>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
