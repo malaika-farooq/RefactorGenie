@@ -164,21 +164,21 @@ st.sidebar.markdown("### Steps to Use RefactorGenie:")
 st.sidebar.markdown(
     """
 1. **Access the Application**:
-   - Open the RefactorGenie application on your web browser.
+   - Click on RefactorGenie and Open the RefactorGenie link on your web browser.
 
 2. **Upload Your Code**:
-   - Click the "Upload" button to upload your Python, TypeScript, or JavaScript code file.
-   - Select the `.py`, `.ts`, or `.js` file from your device and click "Open".
+   - Enter you git URL and Click the "Get file tree" button to access your Python, TypeScript, or JavaScript code files.
+   - Select the `.py`, `.ts`, or `.js` files to proceed.".
 
-3. **View Uploaded Code**:
-   - Once uploaded, your code will be displayed on the screen for you to review.
+3. **View Selected Code**:
+   - Once selected, your code will be displayed on the screen for you to review.
 
 4. **Submit for Refactoring**:
-   - Click the "SEND" button to submit your code for refactoring.
+   - Add API Key and Click the "Refactor" button to submit your code for refactoring.
    - The AI will process your code and generate optimized solutions.
 
 5. **Receive Refactored Solutions**:
-   - View the refactored solutions provided by RefactorGenie.
+   - View the refactored solutions provided by RefactorGenie in response.
    - The solutions will be displayed on the screen, allowing you to compare and choose the best one for your needs.
 
 6. **Implement and Enjoy**:
