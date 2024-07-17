@@ -43,8 +43,11 @@ def get_response(question, language):
             "response_format": {"type": "json_object"},
         },
     )
+    st.markdown(res)
     res = res.json()
+    st.markdown(res)
     response = res
+    st.markdown(response)
     response = json.loads(response)
     return response
 

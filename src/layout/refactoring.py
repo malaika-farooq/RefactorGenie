@@ -4,6 +4,7 @@ import os
 import requests
 from dotenv import load_dotenv
 from typing import Dict
+from streamlit_ace import st_ace
 
 load_dotenv()
 api_key = os.getenv("MISTRAL_API_KEY")
@@ -26,9 +27,8 @@ def get_response(question, language):
         {
             "role": "system",
             "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
- Structure your answer in the JSON format: {output}
-
-Here's the question: """,
+            Structure your answer in the JSON format: {output}
+            Here's the question: """,
         },
         {"role": "user", "content": question},
     ]
@@ -46,6 +46,7 @@ Here's the question: """,
     )
     res = res.json()
     response = res
+    st.title(response)
     response = json.loads(response)
     return response
 
@@ -149,7 +150,9 @@ def code_refactoring(refactor_options: Dict) -> None:
         )
 
         # User input
-        user_input = st.text_input("Enter additional code (optional).")
+        st.markdown("Enter additional code (optional).")
+        user_input = ( get_user_provided_code(refactor_options["refactor_options"]["programming_language"].lower()))
+        # user_input = st.text_input("Enter additional code (optional).")
 
         # Button to send user input
         if st.button("REFACTOR"):
@@ -172,7 +175,7 @@ def code_refactoring(refactor_options: Dict) -> None:
         st.markdown("Upload your code file or enter additional code and click REFACTOR to get refactored solutions.")
 
         # Instructions for users
-    st.markdown("Upload your code file or enter your code in the text box and click SEND to get refactored solutions.")
+    # st.markdown("Upload your code file or enter your code in the text box and click SEND to get refactored solutions.")
 
     # Footer with social links
     st.markdown("""
@@ -183,6 +186,25 @@ def code_refactoring(refactor_options: Dict) -> None:
     """, unsafe_allow_html=True)
 
     return
-  
+def get_user_provided_code(language_input: str) -> str:
+    """
+    Gets user-provided code using the ACE editor component.
+
+    Args:
+        language_input (str): The programming language for syntax highlighting.
+
+    Returns:
+        str: The user-provided code.
+    """
+    return st_ace(
+        language=language_input,
+        theme="monokai",
+        key="ace_code_input",
+        height=150,
+        keybinding="vscode",
+        auto_update=True,
+        wrap=True,
+        font_size=13,
+    ) 
 if __name__ == "__main__":
     pass
