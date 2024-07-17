@@ -1,6 +1,8 @@
 streamlit
 mistralai
-pinecone-client
+llama-index
+llama-index-llms-mistralai
+llama-index-embeddings-mistralai
 cohere
 transformers
 pygwalker
