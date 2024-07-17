@@ -8,13 +8,13 @@ load_dotenv()
 api_key = os.getenv("MISTRAL_API_KEY")
 
 
-def get_response(question, language):
+def get_response(question):
     """
     Get the response from the Codestral API
     """
     output = {
         "prefix": "A description of the code solution",
-        "programming_language": language,
+        "programming_language": "The programming language",
         "imports": "The imports",
         "code": "The functioning code block. Write the whole code in a single line and use \t and \n for tab and new line",
         "sample_io": "Generate the sample input and output for the code generated {'input': '', 'output': ''}",
@@ -25,30 +25,41 @@ def get_response(question, language):
         {
             "role": "system",
             "content": f"""You're a coding assistant. Ensure any code you provided can be executed with all required imports and variables defined. 
-            Structure your answer in the JSON format: {output}
+ Structure your answer in the JSON format: {output}
 
-        Here's the question: """,
+Here's the question: """,
         },
         {"role": "user", "content": question},
     ]
 
     headers = {"Authorization": f"Bearer {api_key}"}
 
-    res = requests.post(
-        "https://codestral.mistral.ai/v1/chat/completions",
-        headers=headers,
-        json={
-            "model": model,
-            "messages": messages,
-            "response_format": {"type": "json_object"},
-        },
-    )
-    st.markdown(res)
-    res = res.json()
-    st.markdown(res)
-    response = res
-    st.markdown(response)
-    response = json.loads(response)
+    try:
+        res = requests.post(
+            "https://codestral.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json={
+                "model": model,
+                "messages": messages,
+                "response_format": {"type": "json_object"},
+            },
+        )
+        res.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        st.error(f"API request failed: {e}")
+        return None
+
+    try:
+        res_json = res.json()
+        response = res_json["choices"][0]["message"]["content"]
+        response = response.replace("```python", "```")
+        response = response.replace("```", "")
+        response = json.loads(response)
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        st.error(f"Failed to parse API response: {e}")
+        st.error(f"API response content: {res.content}")
+        return None
+
     return response
 
 
@@ -191,7 +202,6 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
-    file_extension = uploaded_file.name.split(".")[-1]
     code = uploaded_file.read().decode("utf-8")
     st.markdown(
         f'<div class="uploaded-file"><pre><code>{code}</code></pre></div>',
@@ -205,18 +215,20 @@ if uploaded_file:
     if st.button("REFACTOR"):
         if user_input:
             st.markdown("**Additional Code**")
-            st.code(user_input, language=file_extension)
+            st.code(user_input)
             total_code = code + "\n" + user_input
         else:
             total_code = code
 
         # Get response from Codestral API
-        response = get_response(total_code, file_extension)
+        response = get_response(total_code)
 
-        # Process the response and provide refactored solutions
-        # For demonstration purposes, we'll just display the response
-        st.markdown("Here is your refactored code:")
-        st.write(response)
+        if response:
+            # Process the response and provide refactored solutions
+            st.markdown("Here is your refactored code:")
+            st.write(response)
+        else:
+            st.error("Failed to get a valid response from the API.")
 
 # Instructions for users
 st.markdown(
